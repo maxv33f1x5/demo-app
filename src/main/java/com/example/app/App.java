@@ -2,140 +2,181 @@ package com.example.app;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.commons.lang3.StringUtils;
 
-import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Scanner;
 
 public class App {
 
     private static final Logger logger =
             LoggerFactory.getLogger(App.class);
 
-    // Custom Exception
-    static class InvalidProjectException extends Exception {
-
-        public InvalidProjectException(String message) {
-            super(message);
-        }
-    }
+    private static final ArrayList<Book> books =
+            new ArrayList<>();
 
     public static void main(String[] args) {
 
-        long startTime = System.currentTimeMillis();
+        Scanner sc = new Scanner(System.in);
 
-        logger.info("========== CI/CD PIPELINE STARTED ==========");
+        logger.info("===== LIBRARY MANAGEMENT SYSTEM STARTED =====");
 
-        String project = "Jenkins Maven Build";
+        while (true) {
 
-        // Environment Variable
-        String environment = System.getenv("ENVIRONMENT");
+            System.out.println("\n====================================");
+            System.out.println("     LIBRARY MANAGEMENT SYSTEM");
+            System.out.println("====================================");
 
-        if (environment == null) {
-            environment = "Development";
-        }
+            System.out.println("1. Add Book");
+            System.out.println("2. View Books");
+            System.out.println("3. Search Book");
+            System.out.println("4. Delete Book");
+            System.out.println("5. Exit");
 
-        logger.info("Environment: {}", environment);
+            System.out.print("\nEnter Choice: ");
 
-        try {
+            int choice = sc.nextInt();
+            sc.nextLine();
 
-            validateProject(project);
+            switch (choice) {
 
-            compileStage();
+                case 1:
+                    addBook(sc);
+                    break;
 
-            testStage();
+                case 2:
+                    viewBooks();
+                    break;
 
-            packageStage();
+                case 3:
+                    searchBook(sc);
+                    break;
 
-            deployStage();
+                case 4:
+                    deleteBook(sc);
+                    break;
 
-            String result = greet(project);
+                case 5:
+                    logger.info("Application Closed");
+                    System.out.println("Exiting...");
+                    sc.close();
+                    System.exit(0);
 
-            logger.info(result);
-
-            System.out.println(result);
-
-            logger.info("Build completed successfully at {}",
-                    LocalDateTime.now());
-
-        } catch (InvalidProjectException e) {
-
-            logger.error("Validation Error: {}", e.getMessage());
-
-        } catch (Exception e) {
-
-            logger.error("Unexpected Error: {}", e.getMessage());
-
-        } finally {
-
-            long endTime = System.currentTimeMillis();
-
-            logger.info("Total Execution Time: {} ms",
-                    (endTime - startTime));
-
-            logger.info("========== CI/CD PIPELINE FINISHED ==========");
+                default:
+                    System.out.println("Invalid Choice!");
+            }
         }
     }
 
-    // Validation Method
-    public static void validateProject(String project)
-            throws InvalidProjectException {
+    // Add Book
+    public static void addBook(Scanner sc) {
 
-        logger.info("Validating project...");
+        System.out.print("Enter Book ID: ");
+        int id = sc.nextInt();
+        sc.nextLine();
 
-        if (StringUtils.isBlank(project)) {
+        System.out.print("Enter Book Name: ");
+        String name = sc.nextLine();
 
-            throw new InvalidProjectException(
-                    "Project name cannot be empty"
-            );
+        System.out.print("Enter Author Name: ");
+        String author = sc.nextLine();
+
+        Book book = new Book(id, name, author);
+
+        books.add(book);
+
+        logger.info("Book Added Successfully");
+
+        System.out.println("Book Added Successfully");
+    }
+
+    // View Books
+    public static void viewBooks() {
+
+        if (books.isEmpty()) {
+
+            System.out.println("No Books Available");
+
+            return;
         }
 
-        logger.info("Validation successful");
+        System.out.println("\n===== BOOK LIST =====");
+
+        for (Book book : books) {
+
+            System.out.println(book);
+        }
     }
 
-    // Simulated Compile Stage
-    public static void compileStage() throws InterruptedException {
+    // Search Book
+    public static void searchBook(Scanner sc) {
 
-        logger.info("Compiling source code...");
+        System.out.print("Enter Book ID to Search: ");
 
-        Thread.sleep(1000);
+        int id = sc.nextInt();
 
-        logger.info("Compilation successful");
+        for (Book book : books) {
+
+            if (book.getId() == id) {
+
+                System.out.println("Book Found:");
+                System.out.println(book);
+
+                return;
+            }
+        }
+
+        System.out.println("Book Not Found");
     }
 
-    // Simulated Test Stage
-    public static void testStage() throws InterruptedException {
+    // Delete Book
+    public static void deleteBook(Scanner sc) {
 
-        logger.info("Running unit tests...");
+        System.out.print("Enter Book ID to Delete: ");
 
-        Thread.sleep(1000);
+        int id = sc.nextInt();
 
-        logger.info("All test cases passed");
+        for (Book book : books) {
+
+            if (book.getId() == id) {
+
+                books.remove(book);
+
+                logger.info("Book Deleted Successfully");
+
+                System.out.println("Book Deleted Successfully");
+
+                return;
+            }
+        }
+
+        System.out.println("Book Not Found");
+    }
+}
+
+// Book Class
+class Book {
+
+    private int id;
+    private String name;
+    private String author;
+
+    public Book(int id, String name, String author) {
+
+        this.id = id;
+        this.name = name;
+        this.author = author;
     }
 
-    // Simulated Package Stage
-    public static void packageStage() throws InterruptedException {
+    public int getId() {
 
-        logger.info("Packaging application...");
-
-        Thread.sleep(1000);
-
-        logger.info("JAR packaging successful");
+        return id;
     }
 
-    // Simulated Deploy Stage
-    public static void deployStage() throws InterruptedException {
+    @Override
+    public String toString() {
 
-        logger.info("Deploying application...");
-
-        Thread.sleep(1000);
-
-        logger.info("Deployment successful");
-    }
-
-    // Business Logic Method
-    public static String greet(String project) {
-
-        return "Hello, " + project +
-                "! CI/CD Pipeline Build Successful.";
+        return "Book ID: " + id
+                + " | Name: " + name
+                + " | Author: " + author;
     }
 }
